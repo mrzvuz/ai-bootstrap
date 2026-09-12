@@ -1,0 +1,46 @@
+[project]
+name = "genai-launchpad"
+version = "3.4.1"
+description = "GenAI Launchpad by Datalumina"
+requires-python = "==3.13.13"
+dependencies = [
+    "alembic>=1.18.4",
+    "celery>=5.6.3",
+    "fastapi>=0.136.0",
+    "instructor>=1.15.1",
+    "jinja2>=3.1.6",
+    "langfuse>=3.10.5,<4",
+    "psycopg2-binary>=2.9.11",
+    "pydantic>=2.13.1",
+    "pydantic-ai>=1.94",
+    "python-dotenv>=1.2.2",
+    "python-frontmatter>=1.1.0",
+    "redis>=7.4.0",
+    "tiktoken>=0.12.0",
+    "uvicorn>=0.44.0",
+    "vecs>=0.4.5",
+]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["app/launchpad"]
+
+[dependency-groups]
+dev = [
+    "graphviz>=0.21",
+    "ipykernel>=7.2.0",
+    "ipython>=9.12.0",
+    "nest-asyncio>=1.6.0",
+    "ruff>=0.15.11",
+]
+
+[tool.ruff]
+exclude = [".venv", "app/launchpad/core/commands", "app/launchpad/alembic", ".sh"]
+
+[tool.pyright]
+extraPaths = ["app"]
+venvPath = "."
+venv = ".venv"
