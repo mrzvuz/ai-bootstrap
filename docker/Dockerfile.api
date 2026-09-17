@@ -1,0 +1,21 @@
+FROM python:3.13.13-slim-bookworm
+COPY --from=ghcr.io/astral-sh/uv:latest /uv /uvx /bin/
+
+ENV PYTHONDONTWRITEBYTECODE=1
+ENV PYTHONUNBUFFERED=1
+
+WORKDIR /workspace
+
+COPY pyproject.toml uv.lock ./
+COPY app/ ./app/
+
+# Install deps + the launchpad package itself (editable) into the
+# system interpreter. Editable install means code edits picked up by a
+# volume mount take effect without a rebuild.
+RUN uv pip install --system -e .
+
+RUN chmod +x /workspace/app/launchpad/start.sh
+
+EXPOSE 8080
+
+CMD ["/workspace/app/launchpad/start.sh"]
