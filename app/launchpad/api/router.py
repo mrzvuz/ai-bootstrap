@@ -1,14 +1,6 @@
 from fastapi import APIRouter
 
-from launchpad.api import events
-from launchpad.api import openai
-
-"""
-API Router Module
-
-This module sets up the API router and includes all defined endpoints.
-It uses FastAPI's APIRouter to group related endpoints and provide a prefix.
-"""
+from launchpad.api import events, openai
 
 router = APIRouter()
 

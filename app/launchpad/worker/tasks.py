@@ -1,48 +1,22 @@
-from contextlib import contextmanager
-
 from launchpad.database.event import Event
 from launchpad.database.repository import GenericRepository
 from launchpad.database.session import db_session
 from launchpad.worker.config import celery_app
 from launchpad.workflows.workflow_registry import WorkflowRegistry
 
-"""
-Workflow Task Processing Module
-
-This module handles asynchronous processing of workflow events using Celery.
-It manages the lifecycle of event processing from database retrieval through
-workflow execution and result storage.
-"""
-
-
 @celery_app.task(name="process_incoming_event")
 def process_incoming_event(event_id: str):
-    """Processes an incoming event through its designated workflow.
-
-    This Celery task handles the asynchronous processing of events by:
-    1. Retrieving the event from the database
-    2. Determining the appropriate workflow
-    3. Executing the workflow
-    4. Storing the results
-
-    Args:
-        event_id: Unique identifier of the event to process
-        workflow_type: Type of workflow to use for processing the event
-    """
-    with contextmanager(db_session)() as session:
-        # Initialize repository for database operations
+    """Run the workflow attached to a stored event."""
+    session_generator = db_session()
+    session = next(session_generator)
+    try:
         repository = GenericRepository(session=session, model=Event)
-
-        # Retrieve event from database
-        db_event = repository.get(id=event_id)
-        if db_event is None:
+        event = repository.get(id=event_id)
+        if event is None:
             raise ValueError(f"Event with id {event_id} not found")
 
-        # Execute workflow and store results
-        workflow = WorkflowRegistry[db_event.workflow_type].value()
-        task_context = workflow.run(db_event.data).model_dump(mode="json")
-
-        db_event.task_context = task_context
-
-        # Update event with processing results
-        repository.update(obj=db_event)
+        workflow = WorkflowRegistry[event.workflow_type].value()
+        event.task_context = workflow.run(event.data).model_dump(mode="json")
+        repository.update(obj=event)
+    finally:
+        session_generator.close()

@@ -1,7 +1,7 @@
 [project]
-name = "genai-launchpad"
+name = "ai-bootstrap"
 version = "3.4.1"
-description = "GenAI Launchpad by Datalumina"
+description = "AI Bootstrap"
 requires-python = "==3.13.13"
 dependencies = [
     "alembic>=1.18.4",

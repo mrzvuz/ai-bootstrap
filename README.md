@@ -1,12 +1,12 @@
-# GenAI Launchpad
+# AI Bootstrap
 
-GenAI Launchpad is a Docker-based starter kit for building production-ready GenAI applications.
+AI Bootstrap is a Docker-based starter kit for building production-ready GenAI applications.
 
 It includes FastAPI, Celery, PostgreSQL with vector support, Redis, optional Caddy and Supabase services, workflow orchestration, background processing, streaming, tracing, and example AI workflows.
 
 ## Overview
 
-The Launchpad gives you the core infrastructure and workflow patterns needed to build GenAI applications on one branch: `main`.
+AI Bootstrap gives you the core infrastructure and workflow patterns needed to build GenAI applications on one branch: `main`.
 
 Use the application code as the foundation, study the examples in `workflows`, and run them locally from `playground`.
 
@@ -36,20 +36,26 @@ pyproject.toml          Python project configuration
 
 ## Installation
 
-Start with the [installation guide](https://launchpad.datalumina.com/docs/getting-started/installation).
+Install Python 3.13.13 and `uv`, copy the example environment files, then install dependencies:
 
-It covers environment variables, Docker services, the Python environment, `uv sync`, and database migrations. Complete those steps before running the playground examples.
+```bash
+cp .env.example .env
+cp docker/.env.example docker/.env
+uv sync
+```
+
+Start the Docker services from `docker/` with `./start.sh`, then apply database migrations from `app/launchpad/` with `./migrate.sh`.
 
 There are two environment files on purpose:
 
 - `.env` at the repo root is for local development with your local Python environment, including playground scripts, unit tests, notebooks, and one-off `uv run ...` commands.
-- `docker/.env` is for Docker Compose, the fully containerized Launchpad stack, the database, and optional Supabase services. It is much larger mostly because self-hosted Supabase requires many settings even though Supabase is excluded by default.
+- `docker/.env` is for Docker Compose, the fully containerized application stack, the database, and optional Supabase services. It is much larger mostly because self-hosted Supabase requires many settings even though Supabase is excluded by default.
 
 ## Workflows
 
 Example workflows live in `app/launchpad/workflows/examples/`.
 
-They show how to build Launchpad workflows with nodes, routers, schemas, prompts, tracing, streaming, and retrieval.
+They show how to build workflows with nodes, routers, schemas, prompts, tracing, streaming, and retrieval.
 
 Current examples:
 
@@ -75,8 +81,4 @@ Each script loads an example request from the matching workflow directory.
 
 ## Documentation
 
-Official documentation: [launchpad.datalumina.com](https://launchpad.datalumina.com/).
-
-## License
-
-This project is licensed under the DATALUMINA License. See `LICENSE` for details.
+Setup and workflow documentation is maintained in this repository and in each example workflow's README.

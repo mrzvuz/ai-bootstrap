@@ -10,21 +10,17 @@ class RetrievalNode(Node):
 
     async def process(self, task_context: TaskContext) -> TaskContext:
         rag_service = PgvectorRAGService()
-        collection = rag_service.get_collection()
         event: RagExampleEventSchema = task_context.event
         embedding = rag_service.get_embedding(event.query)
 
-        results = collection.query(
+        results = rag_service.collection.query(
             data=embedding,
             limit=3,
             measure="cosine_distance",
             include_value=False,
             include_metadata=True,
         )
-        results: RetrievalResults = rag_service.parse_results(results)
-        output = self.OutputType(results=results)
-
-        self.save_output(output)
+        self.save_output(self.OutputType(results=rag_service.parse_results(results)))
         rag_service.disconnect()
 
         return task_context

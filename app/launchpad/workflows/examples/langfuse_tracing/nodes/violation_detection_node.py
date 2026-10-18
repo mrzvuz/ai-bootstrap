@@ -1,5 +1,3 @@
-from typing import Optional
-
 from launchpad.core.nodes.agent import AgentNode, AgentConfig, ModelProvider
 from launchpad.core.task import TaskContext
 from launchpad.workflows.examples.langfuse_tracing.schema import LangfuseTracingEventSchema
@@ -9,7 +7,7 @@ class ViolationDetectionNode(AgentNode):
     class OutputType(AgentNode.OutputType):
         comment_id: str
         violation: bool
-        reason: Optional[str] = None
+        reason: str | None = None
 
     def get_agent_config(self) -> AgentConfig:
         return AgentConfig(
@@ -23,10 +21,6 @@ class ViolationDetectionNode(AgentNode):
 
     async def process(self, task_context: TaskContext) -> TaskContext:
         event: LangfuseTracingEventSchema = task_context.event
-
-        @self.agent.instructions
-        async def add_context() -> str:
-            return event.model_dump_json()
 
         result = await self.agent.run(user_prompt=event.model_dump_json())
 

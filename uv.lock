@@ -740,7 +740,7 @@ wheels = [
 ]
 
 [[package]]
-name = "genai-launchpad"
+name = "ai-bootstrap"
 version = "3.4.1"
 source = { editable = "." }
 dependencies = [
