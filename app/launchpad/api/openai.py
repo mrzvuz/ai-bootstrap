@@ -8,13 +8,11 @@ from launchpad.workflows.examples.streaming.workflow import ExampleStreamingWork
 router = APIRouter()
 
 
-@router.post("/chat/completions", dependencies=[])
+@router.post("/chat/completions")
 async def handle_chat_completion_streaming(data: OpenAIChatSchema) -> StreamingResponse:
     workflow = ExampleStreamingWorkflow(enable_tracing=True)
-    workflow_stream = workflow.run_stream_async(data.model_dump())
-
     return StreamingResponse(
-        event_stream_generator(workflow_stream),
+        event_stream_generator(workflow.run_stream_async(data.model_dump())),
         media_type="text/event-stream",
         headers={
             "Cache-Control": "no-cache",

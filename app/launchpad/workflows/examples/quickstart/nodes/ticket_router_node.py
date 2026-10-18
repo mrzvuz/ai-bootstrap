@@ -1,5 +1,3 @@
-from typing import Optional
-
 from launchpad.core.nodes.base import Node
 from launchpad.core.nodes.router import BaseRouter, RouterNode
 from launchpad.core.task import TaskContext
@@ -25,7 +23,7 @@ class TicketRouterNode(BaseRouter):
 
 
 class CloseTicketRouter(RouterNode):
-    def determine_next_node(self, task_context: TaskContext) -> Optional[Node]:
+    def determine_next_node(self, task_context: TaskContext) -> Node | None:
         filter_spam_node: FilterSpamNode.OutputType = self.get_output(FilterSpamNode)
         if not filter_spam_node.is_human and filter_spam_node.confidence > 0.8:
             return CloseTicketNode()
@@ -33,7 +31,7 @@ class CloseTicketRouter(RouterNode):
 
 
 class EscalationRouter(RouterNode):
-    def determine_next_node(self, task_context: TaskContext) -> Optional[Node]:
+    def determine_next_node(self, task_context: TaskContext) -> Node | None:
         intent_node: DetermineTicketIntentNode.OutputType = self.get_output(
             DetermineTicketIntentNode
         )
@@ -43,7 +41,7 @@ class EscalationRouter(RouterNode):
 
 
 class InvoiceRouter(RouterNode):
-    def determine_next_node(self, task_context: TaskContext) -> Optional[Node]:
+    def determine_next_node(self, task_context: TaskContext) -> Node | None:
         intent_node: DetermineTicketIntentNode.OutputType = self.get_output(
             DetermineTicketIntentNode
         )

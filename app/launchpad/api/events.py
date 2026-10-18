@@ -1,9 +1,8 @@
-import json
 from http import HTTPStatus
 
 from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
-from starlette.responses import Response
+from starlette.responses import JSONResponse
 
 from launchpad.database.event import Event
 from launchpad.database.repository import GenericRepository
@@ -14,29 +13,12 @@ from launchpad.workflows.workflow_registry import WorkflowRegistry
 router = APIRouter()
 
 
-@router.post("/", dependencies=[])
+@router.post("/")
 def handle_event(
     data: dict,
     session: Session = Depends(db_session),
 ) -> Response:
-    """Handles incoming event submissions.
-
-    This endpoint receives events, stores them in the database,
-    and queues them for asynchronous processing. It implements
-    a non-blocking pattern to ensure API responsiveness.
-
-    Args:
-        data: The event data, validated against EventSchema
-        session: Database session injected by FastAPI dependency
-
-    Returns:
-        Response: 202 Accepted response with task ID
-
-    Note:
-        The endpoint returns immediately after queueing the task.
-        Use the task ID in the response to check processing status.
-    """
-    # Store event in database
+    """Store an event and queue it for workflow processing."""
     repository = GenericRepository(
         session=session,
         model=Event,
@@ -44,21 +26,16 @@ def handle_event(
     event = Event(data=data, workflow_type=get_workflow_type())
     repository.create(obj=event)
 
-    # Queue processing task
     task_id = celery_app.send_task(
         "process_incoming_event",
         args=[str(event.id)],
     )
 
-    # Return acceptance response
-    return Response(
-        content=json.dumps({"message": f"process_incoming_event started `{task_id}` "}),
+    return JSONResponse(
+        content={"message": f"process_incoming_event started `{task_id}`"},
         status_code=HTTPStatus.ACCEPTED,
     )
 
 
 def get_workflow_type() -> str:
-    """
-    Implement your logic to determine the workflow type based on the event data.
-    """
     return WorkflowRegistry.QUICKSTART.name

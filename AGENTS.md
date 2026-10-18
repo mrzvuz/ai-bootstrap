@@ -1,6 +1,6 @@
-# GenAI Launchpad — coding notes
+# AI Bootstrap — coding notes
 
-Production foundation for event-driven GenAI applications. FastAPI + Celery + Redis + PostgreSQL (pgvector) + PydanticAI + Langfuse, orchestrated as DAG workflows of nodes that pass a shared `TaskContext`. Python 3.13.13, `uv`, Docker-based. See `README.md` to run it and [launchpad.datalumina.com](https://launchpad.datalumina.com/) for the full docs.
+Production foundation for event-driven GenAI applications. FastAPI + Celery + Redis + PostgreSQL (pgvector) + PydanticAI + Langfuse, orchestrated as DAG workflows of nodes that pass a shared `TaskContext`. Python 3.13.13, `uv`, Docker-based. See `README.md` for setup instructions.
 
 ## Golden rules
 

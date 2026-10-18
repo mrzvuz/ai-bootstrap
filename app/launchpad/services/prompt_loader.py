@@ -1,52 +1,16 @@
 from pathlib import Path
 
 import frontmatter
-from jinja2 import Environment, FileSystemLoader, StrictUndefined, TemplateError, meta
-
-"""
-Prompt Management Module
-
-This module provides functionality for loading and rendering prompt templates with frontmatter.
-It uses Jinja2 for template rendering and python-frontmatter for metadata handling,
-implementing a singleton pattern for template environment management.
-"""
-
+from jinja2 import Environment, FileSystemLoader, StrictUndefined, meta
 
 class PromptManager:
-    """Manager class for handling prompt templates and their metadata.
+    """Load and render prompt templates."""
 
-    This class provides functionality to load prompt templates from files,
-    render them with variables, and extract template metadata and requirements.
-    It implements a singleton pattern for the Jinja2 environment to ensure
-    consistent template loading across the application.
-
-    Attributes:
-        _env: Class-level singleton instance of Jinja2 Environment
-
-    Example:
-        # Render a prompt template with variables
-        prompt = PromptManager.get_prompt("greeting", name="Alice")
-
-        # Get template metadata and required variables
-        info = PromptManager.get_template_info("greeting")
-    """
-
-    _env = None
+    _env: Environment | None = None
 
     @classmethod
     def _get_env(cls, templates_dir="prompts") -> Environment:
-        """Gets or creates the Jinja2 environment singleton.
-
-        Args:
-            templates_dir: Directory name containing prompt templates, relative to the launchpad package root
-
-        Returns:
-            Configured Jinja2 Environment instance
-
-        Note:
-            Uses StrictUndefined to raise errors for undefined variables,
-            helping catch template issues early.
-        """
+        """Return the shared Jinja environment."""
         templates_dir = Path(__file__).parent.parent / templates_dir
         if cls._env is None:
             cls._env = Environment(
@@ -56,23 +20,8 @@ class PromptManager:
         return cls._env
 
     @staticmethod
-    def get_prompt(template: str, prompts_dir=None, **kwargs) -> str:
-        """Loads and renders a prompt template with provided variables.
-
-        Args:
-            template: Name of the template file (without .j2 extension)
-            prompts_dir: Optional path to a custom prompts directory.
-                         When provided, loads from this directory instead
-                         of the default launchpad/prompts/ location.
-            **kwargs: Variables to use in template rendering
-
-        Returns:
-            Rendered template string
-
-        Raises:
-            ValueError: If template rendering fails
-            FileNotFoundError: If template file doesn't exist
-        """
+    def get_prompt(template: str, prompts_dir=None, **variables) -> str:
+        """Render a named template with the supplied variables."""
         if prompts_dir is not None:
             env = Environment(
                 loader=FileSystemLoader(prompts_dir),
@@ -81,37 +30,17 @@ class PromptManager:
         else:
             env = PromptManager._get_env()
         template_path = f"{template}.j2"
-        with open(env.loader.get_source(env, template_path)[1]) as file:
-            post = frontmatter.load(file)
-
-        template = env.from_string(post.content)
-        try:
-            return template.render(**kwargs)
-        except TemplateError as e:
-            raise ValueError(f"Error rendering template: {str(e)}")
+        source = env.loader.get_source(env, template_path)[0]
+        post = frontmatter.loads(source)
+        return env.from_string(post.content).render(**variables)
 
     @staticmethod
     def get_template_info(template: str) -> dict:
-        """Extracts metadata and variable requirements from a template.
-
-        Args:
-            template: Name of the template file (without .j2 extension)
-
-        Returns:
-            Dictionary containing:
-                - name: Template name
-                - description: Template description from frontmatter
-                - author: Template author from frontmatter
-                - variables: List of required template variables
-                - frontmatter: Raw frontmatter metadata dictionary
-
-        Raises:
-            FileNotFoundError: If template file doesn't exist
-        """
+        """Return template metadata and referenced variables."""
         env = PromptManager._get_env()
         template_path = f"{template}.j2"
-        with open(env.loader.get_source(env, template_path)[1]) as file:
-            post = frontmatter.load(file)
+        source = env.loader.get_source(env, template_path)[0]
+        post = frontmatter.loads(source)
 
         ast = env.parse(post.content)
         variables = meta.find_undeclared_variables(ast)
