@@ -1,6 +1,6 @@
-https://launchpad.your-domain.com {
+https://ai-bootstrap.your-domain.com {
 	log {
-		output file /var/log/caddy/launchpad.log
+		output file /var/log/caddy/ai-bootstrap.log
 		format console
 		level info
 	}

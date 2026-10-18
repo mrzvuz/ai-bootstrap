@@ -1,6 +1,6 @@
 include:
   - path:
-      - ./docker-compose.launchpad.yml
+      - ./docker-compose.application.yml
 #      - ./docker-compose.supabase.yml
 #  - path: ./docker-compose.caddy.yml
 

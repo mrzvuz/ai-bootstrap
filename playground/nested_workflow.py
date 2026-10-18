@@ -9,14 +9,14 @@ project_root = Path(__file__).parent.parent
 
 load_dotenv(project_root / ".env")
 
-from launchpad.workflows.workflow_registry import WorkflowRegistry  # noqa: E402
+from ai_bootstrap.workflows.workflow_registry import WorkflowRegistry  # noqa: E402
 
 logging.basicConfig(level=logging.INFO)
 nest_asyncio.apply()
 
 event_path = (
     project_root
-    / "app/launchpad/workflows/examples/nested_workflow/request_examples/billing_question.json"
+    / "app/ai_bootstrap/workflows/examples/nested_workflow/request_examples/billing_question.json"
 )
 with open(event_path) as f:
     event = json.load(f)

@@ -10,7 +10,7 @@ project_root = Path(__file__).parent.parent
 
 load_dotenv(project_root / ".env")
 
-from launchpad.workflows.workflow_registry import WorkflowRegistry
+from ai_bootstrap.workflows.workflow_registry import WorkflowRegistry
 
 logging.basicConfig(level=logging.INFO)
 nest_asyncio.apply()
@@ -25,7 +25,7 @@ asyncio event loop.
 
 async def main() -> None:
     event_path = (
-        project_root / "app/launchpad/workflows/examples/streaming/request_examples/chat.json"
+        project_root / "app/ai_bootstrap/workflows/examples/streaming/request_examples/chat.json"
     )
     with open(event_path) as f:
         event = json.load(f)
