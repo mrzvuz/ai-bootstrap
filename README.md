@@ -1,42 +1,34 @@
 # AI Bootstrap
 
-AI Bootstrap is a Docker-based starter kit for building production-ready GenAI applications.
+AI Bootstrap is a Python starter project for event driven AI applications. It combines FastAPI, Celery, Redis, PostgreSQL with pgvector, PydanticAI, and Langfuse.
 
-It includes FastAPI, Celery, PostgreSQL with vector support, Redis, optional Caddy and Supabase services, workflow orchestration, background processing, streaming, tracing, and example AI workflows.
+Workflows are built as graphs of small nodes. Each node reads and updates a shared `TaskContext`; the API accepts events and Celery runs their workflows in the background.
 
-## Overview
-
-AI Bootstrap gives you the core infrastructure and workflow patterns needed to build GenAI applications on one branch: `main`.
-
-Use the application code as the foundation, study the examples in `workflows`, and run them locally from `playground`.
-
-## Project Structure
+## Repository layout
 
 ```text
-app/
-  launchpad/
-    alembic/            Database migrations
-    api/                FastAPI routes
-    core/               Workflow, node, routing, and validation primitives
-    database/           Database models, sessions, and repositories
-    prompts/            Shared prompt templates
-    schemas/            Shared schemas
-    services/           Shared application services
-    utils/              Utility functions
-    worker/             Celery worker configuration and tasks
-    workflows/          Workflow definitions, registry, and examples
-    main.py             FastAPI application entrypoint
-    migrate.sh          Run database migrations
-    makemigration.sh    Create database migrations
-
-docker/                 Docker, Caddy, Supabase, and service configuration
-playground/             Scripts for running workflows locally
-pyproject.toml          Python project configuration
+app/ai_bootstrap/
+  api/             FastAPI endpoints
+  core/            Workflow, node, and routing primitives
+  database/        SQLAlchemy models and database access
+  services/        Shared application services
+  workflows/       Workflow registry and runnable examples
+  worker/          Celery application and event tasks
+  start.sh         Run migrations and start the API
+docker/            Docker Compose, Dockerfiles, and service configuration
+playground/         Local runners for the example workflows
 ```
 
-## Installation
+## Requirements
 
-Install Python 3.13.13 and `uv`, copy the example environment files, then install dependencies:
+- Python 3.13.13
+- [`uv`](https://docs.astral.sh/uv/)
+- Docker and Docker Compose for the full service stack
+- An OpenAI API key for the LLM examples
+
+## Local setup
+
+Create the local environment files and install the project:
 
 ```bash
 cp .env.example .env
@@ -44,41 +36,58 @@ cp docker/.env.example docker/.env
 uv sync
 ```
 
-Start the Docker services from `docker/` with `./start.sh`, then apply database migrations from `app/launchpad/` with `./migrate.sh`.
-
-There are two environment files on purpose:
-
-- `.env` at the repo root is for local development with your local Python environment, including playground scripts, unit tests, notebooks, and one-off `uv run ...` commands.
-- `docker/.env` is for Docker Compose, the fully containerized application stack, the database, and optional Supabase services. It is much larger mostly because self-hosted Supabase requires many settings even though Supabase is excluded by default.
-
-## Workflows
-
-Example workflows live in `app/launchpad/workflows/examples/`.
-
-They show how to build workflows with nodes, routers, schemas, prompts, tracing, streaming, and retrieval.
-
-Current examples:
-
-- `quickstart`: customer-care workflow with concurrent analysis, routing, and Jinja2 prompts.
-- `nested_workflow`: minimal customer-care workflow that delegates reply drafting to a child workflow.
-- `streaming`: server-sent event streaming with text and structured outputs.
-- `langfuse_tracing`: multi-node moderation workflow with Langfuse tracing.
-- `pgvector_rag`: retrieval-augmented generation using PostgreSQL and pgvector.
-
-## Playground
-
-After installation, use the playground scripts to run examples locally without going through the API.
+Set the required API keys in `.env`. Run a workflow directly with a playground script, for example:
 
 ```bash
-uv run playground/quickstart.py
-uv run playground/nested_workflow.py
-uv run playground/streaming.py
-uv run playground/langfuse_tracing.py
-uv run playground/pgvector_rag.py
+uv run playground/customer_support.py
 ```
 
-Each script loads an example request from the matching workflow directory.
+## Run the service stack
 
-## Documentation
+Configure `docker/.env`, then start the API, worker, Redis, and PostgreSQL:
 
-Setup and workflow documentation is maintained in this repository and in each example workflow's README.
+```bash
+cd docker
+./start.sh
+```
+
+Apply database migrations from the package directory:
+
+```bash
+cd app/ai_bootstrap
+./migrate.sh
+```
+
+The API listens on `http://localhost:8080`. `POST /events/` stores and queues a workflow event. `POST /v1/chat/completions` streams a chat response using Server-Sent Events.
+
+## Example workflows
+
+| Example | Purpose | Runner |
+| --- | --- | --- |
+| Customer support | Parallel ticket analysis and routing | `uv run playground/customer_support.py` |
+| Nested workflow | A parent workflow calls a reply drafting workflow | `uv run playground/nested_workflow.py` |
+| Streaming | Text and structured chat output over SSE | `uv run playground/streaming.py` |
+| Moderation | Comment review with Langfuse tracing | `uv run playground/moderation.py` |
+| Retrieval augmented generation | Search pgvector and answer from retrieved documents | `uv run playground/rag.py` |
+
+See [`app/ai_bootstrap/workflows/examples/`](app/ai_bootstrap/workflows/examples/README.md) for details and sample payloads.
+
+## Build a workflow
+
+Create a workflow directory under `app/ai_bootstrap/workflows/` with an event schema, node modules, and a workflow class. Add the workflow to [`WorkflowRegistry`](app/ai_bootstrap/workflows/workflow_registry.py) so the event API and worker can select it. Use the examples as working references.
+
+## Configuration
+
+- `.env` configures local Python runs.
+- `docker/.env` configures Docker Compose services.
+- Database settings use `DATABASE_HOST`, `DATABASE_NAME`, `DATABASE_USER`, `DATABASE_PASSWORD`, and `DATABASE_PORT`.
+- LLM provider and Langfuse settings are read by their existing provider integrations.
+
+## Database migrations
+
+From `app/ai_bootstrap/`, create a migration and apply it:
+
+```bash
+./makemigration.sh "describe the schema change"
+./migrate.sh
+```

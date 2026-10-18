@@ -90,11 +90,11 @@ target/
 .venv/
 
 # Alembic migrations
-app/launchpad/alembic/versions/*
-!app/launchpad/alembic/versions/.gitkeep
+app/ai_bootstrap/alembic/versions/*
+!app/ai_bootstrap/alembic/versions/.gitkeep
 
-# Launchpad playground
+# AI Bootstrap playground
 playground/*.png
 
-app/launchpad/google-service-account.json
+app/ai_bootstrap/google-service-account.json
 .DS_Store
